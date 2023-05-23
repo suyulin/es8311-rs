@@ -1,10 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use embedded_hal::{
-    delay::blocking::DelayUs,
-    i2c::{blocking::I2c, Error as I2cError},
+    i2c::{Error as I2cError},
+    i2c::I2c,
+    delay::DelayUs,
 };
-
 pub use config::*;
 pub use error::Error;
 use register::Register;
@@ -18,7 +18,7 @@ pub struct Es8311<I2C> {
     address: Address,
 }
 
-impl<I2C: I2c<Error = E>, E: I2cError> Es8311<I2C> {
+impl<I2C: I2c<Error=E>, E: I2cError> Es8311<I2C> {
     pub fn new(i2c: I2C, address: Address) -> Self {
         Self { i2c, address }
     }
@@ -55,8 +55,8 @@ impl<I2C: I2c<Error = E>, E: I2cError> Es8311<I2C> {
                 .then_some(config.sample_frequency.as_freq() * config.res_in.bits() as u32 * 2)
                 .and_then(MclkFreq::try_from_freq),
         }
-        .and_then(|f| Coefficients::get(f, config.sample_frequency))
-        .ok_or(Error::InvalidConfiguration)?;
+            .and_then(|f| Coefficients::get(f, config.sample_frequency))
+            .ok_or(Error::InvalidConfiguration)?;
 
         if config.mclk_inverted {
             reg01 |= 1 << 6;
